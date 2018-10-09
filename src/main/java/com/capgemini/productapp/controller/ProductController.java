@@ -1,5 +1,7 @@
 package com.capgemini.productapp.controller;
 
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -10,13 +12,15 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.RestController;
 
 import com.capgemini.productapp.entity.Product;
 import com.capgemini.productapp.exception.ProductNotFoundException;
 import com.capgemini.productapp.service.ProductService;
 
-@Controller
+@RestController
 public class ProductController {
 
 	@Autowired
@@ -60,7 +64,7 @@ public class ProductController {
 		return new ResponseEntity<Product>(HttpStatus.NOT_FOUND);
 	}
 
-	@DeleteMapping("/products/{productId}")
+	@DeleteMapping("/products/delete/{productId}")
 	public ResponseEntity<Product> deleteProduct(@PathVariable int productId) {
 		try {
 			Product productFromDb = productService.findProductById(productId);
@@ -72,6 +76,40 @@ public class ProductController {
 			// logged the exception
 		}
 		return new ResponseEntity<Product>(HttpStatus.NOT_FOUND);
+	}
+
+	@GetMapping("/products/findByName/{productName}")
+	public ResponseEntity<List<Product>> findProductByName(@PathVariable String productName) {
+		try {
+			Product productFromDb = productService.findProductByName(productName);
+			if (productFromDb != null)
+				return new ResponseEntity<List<Product>>(HttpStatus.OK);
+		} catch (ProductNotFoundException exception) {
+			// logger
+		}
+		return new ResponseEntity<List<Product>>(HttpStatus.NOT_FOUND);
+
+	}
+
+	@GetMapping("/products/findByCategory/{productCategory}")
+	public ResponseEntity<List<Product>> findProductByproductCategory(@PathVariable String productCategory) throws ProductNotFoundException {
+		ResponseEntity<List<Product>> responseEntity = new ResponseEntity<List<Product>>(productService.findProductByCategory(productCategory), HttpStatus.OK);
+				return responseEntity;
+	}
+
+	@GetMapping("/products/findByCategoryAndPrice")
+	public ResponseEntity<List<Product>> findProductByproductNameandPrice(@RequestParam String productCategory,
+			@RequestParam int priceUpperLimit, int priceLowerlimit) {
+		try {
+		Product productFromDb = productService.findProductByCategoryAndPrice(productCategory, priceUpperLimit,
+				priceLowerlimit);
+		
+		if (productFromDb != null)
+			return new ResponseEntity<List<Product>>(HttpStatus.OK);
+	} catch (ProductNotFoundException exception) {
+		// logger
+	}
+	return new ResponseEntity<List<Product>>(HttpStatus.NOT_FOUND);
 	}
 
 }
